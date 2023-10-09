@@ -54,10 +54,13 @@ def find_path(base, target):
 """
 Different implementation of find_path but uses breadth-first search inside of depth first (faster results
 if base and target are closely linked).
+Added dynamic search of DB: this will make it so that sometimes will not return shortest path
+if a path is found in DB from depth 1 or depth 2.
+However, it is much faster to find any path.
 """
 
 
-def find_path_v2(base, target, database):
+def find_path_v2(base, target, database, dynamic):
     # check if the target is also a valid wikipedia page
     find_wiki_page(target)
     # check if path can be found in database
@@ -65,7 +68,7 @@ def find_path_v2(base, target, database):
     ret = find_path_in_database(base, target, database)
     if ret is not None:
         return ret
-    print("Could not find path in database.")
+    print("Could not find path in database (depth=0).")
     ret = [base]
     # trivial edge case
     if page_equals(base, target):
@@ -76,24 +79,30 @@ def find_path_v2(base, target, database):
     base_links = store_wiki_links(base, database)  # all the links FROM the base page
     counter = 1
     for base_link in base_links:
-        # look for link between base_link and target in DB
-        path = find_path_in_database(base_link, target, database)
-        if path is not None:
-            return ret + path
+        if dynamic:
+            # look for link between base_link and target in DB
+            path = find_path_in_database(base_link, target, database)
+            if path is not None:
+                return ret + path
         # depth 1
         if page_equals(base_link, target):
             ret.append(base_link)
             return ret
-
-    for n0_cur in base_links:
+    print("Could not find path in database (depth=1).")
+    for base_link in base_links:
         # depth 2
-        print_percentage(base_links, n0_cur, counter)
+        print_percentage(base_links, base_link, counter)
         counter += 1
-        n1 = store_wiki_links(n0_cur, database)
-        for n1_cur in n1:
-            if page_equals(n1_cur, target):
-                ret.append(n0_cur)
-                ret.append(n1_cur)
+        base_links_depth_2 = store_wiki_links(base_link, database)
+        for base_link_depth_2 in base_links_depth_2:
+            # look in DB
+            if dynamic:
+                path = find_path_in_database(base_link, target, database)
+                if path is not None:
+                    return ret + path
+            if page_equals(base_link_depth_2, target):
+                ret.append(base_link)
+                ret.append(base_link_depth_2)
                 os.system('cls')  # clear
                 return ret
     return None
@@ -273,13 +282,13 @@ def page_equals(n1, n2):
 if __name__ == "__main__":
     db = PageDatabase('page_data.db')
     print("Current number of pages in database (max=" + str(db.MAX_PAGES) + "):" + str(db.num_of_pages))
-    print_path(find_path_v2("Egypt", "Savanna", db))
+    #print_path(find_path_v2("Egypt", "Savanna", db))
 
     if len(sys.argv) != 3:
         print("Incorrect usage: py wikisearch.py <base> <destination>")
         exit(0)
 
     t1 = time.time()
-    print_path(find_path_v2(sys.argv[1], sys.argv[2], db))
+    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, True))
     print("Time taken: " + str(time.time() - t1) + " s.")
     db.close()
