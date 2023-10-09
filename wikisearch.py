@@ -16,7 +16,7 @@ Tries to finds a path between two wikipedia articles consisting of redirects, de
 
 "TODO: Optimize this algorithm, more pruning? keep track of page names that have already been visited in a hashmap?"
 
-
+"""
 def find_path(base, target):
     # global set keeping track of ALL names that have been visited for that particular search
     nset = set()
@@ -49,7 +49,7 @@ def find_path(base, target):
                 os.system('cls')  # clear console text
                 return ret
     return None
-
+"""
 
 """
 Different implementation of find_path but uses breadth-first search inside of depth first (faster results
@@ -73,17 +73,21 @@ def find_path_v2(base, target, database):
         return ret
     # convert target's spaces into underscores
     target = target.replace(" ", "_")
-    n0 = store_wiki_links(base, database)
+    base_links = store_wiki_links(base, database)  # all the links FROM the base page
     counter = 1
-    for n0_cur in n0:
+    for base_link in base_links:
+        # look for link between base_link and target in DB
+        path = find_path_in_database(base_link, target, database)
+        if path is not None:
+            return ret + path
         # depth 1
-        if page_equals(n0_cur, target):
-            ret.append(n0_cur)
+        if page_equals(base_link, target):
+            ret.append(base_link)
             return ret
 
-    for n0_cur in n0:
+    for n0_cur in base_links:
         # depth 2
-        print_percentage(n0, n0_cur, counter)
+        print_percentage(base_links, n0_cur, counter)
         counter += 1
         n1 = store_wiki_links(n0_cur, database)
         for n1_cur in n1:
@@ -135,7 +139,7 @@ Finds the relevant wikipedia redirects from a starting page
 """
 
 
-def find_wiki_links(name, prnt, nset):
+def find_wiki_links(name, prnt):
     ret = []
     page = find_wiki_page(name)
     soup = BeautifulSoup(page.text, "html.parser")
@@ -147,11 +151,9 @@ def find_wiki_links(name, prnt, nset):
             if prnt:
                 print("https://en.wikipedia.org/" + text)
             pname = url_to_name(text)  # find the potential name of the article
-            if valid_name(pname, nset):  # check if name is "valid" according to validation criteria defined (see
+            if valid_name(pname, name):  # check if name is "valid" according to validation criteria defined (see
                 # valid_name function)
                 ret.append(pname)
-                if nset is not None:
-                    nset.add(pname)
     if prnt:
         print("Number of links to other Wikipedia articles: " + str(len(ret)))
     return ret
@@ -169,7 +171,7 @@ def store_wiki_links(page_name, database: PageDatabase):
         return database.query_page_link_all(page_name)
 
     database.create_page_table(page_name)
-    link_names = find_wiki_links(page_name, False, None)
+    link_names = find_wiki_links(page_name, False)
     for link_name in link_names:
         database.insert_link(page_name, link_name)
     return link_names
@@ -189,21 +191,22 @@ def find_path_in_database(base_page_name, target_page_name, database: PageDataba
 
 
 """Determines if a name is to be filtered out. Filtering criteria: if it contains a ':' character, if it is the 
-Main_Page, if it has only two characters (assume its a languages thing), if it is already in the nset@:returns: 
-True if the name is valid, False otherwise"""
+Main_Page, if it has only two characters (assume its a languages thing), if it has the same name as the page it comes from
+@:returns: True if the name is valid, False otherwise"""
 
 
-def valid_name(name, nset):
-    if ':' in name:
+def valid_name(link_name, page_name):
+    if ':' in link_name:
         return False
-    if "Main_Page" == name:
+    if "Main_Page" == link_name:
         return False
-    if len(name) <= 2:
+    if len(link_name) <= 2:
         return False
-    if not re.search('[a-zA-Z]', name):
+    if not re.search('[a-zA-Z]', link_name):
         return False
-    if nset is not None and name in nset:
-        return False  # if we have already found the name somewhere else before
+    if link_name == page_name:
+        return False
+
     return True
 
 
@@ -269,7 +272,8 @@ def page_equals(n1, n2):
 
 if __name__ == "__main__":
     db = PageDatabase('page_data.db')
-    print(db.num_of_pages)
+    print("Current number of pages in database (max=" + str(db.MAX_PAGES) + "):" + str(db.num_of_pages))
+    print_path(find_path_v2("Egypt", "Savanna", db))
 
     if len(sys.argv) != 3:
         print("Incorrect usage: py wikisearch.py <base> <destination>")
