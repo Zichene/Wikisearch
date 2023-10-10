@@ -15,17 +15,16 @@ However, it is much faster to find any path.
 def find_path(base, target, database, dynamic):
     # check if the target is also a valid wikipedia page
     find_wiki_page(target)
-    # check if path can be found in database
-    # try to look in database first!
-    ret = find_path_in_database(base, target, database)
-    if ret is not None:
-        return ret
-    print("[Info]: Could not find path in database (depth=0).")
     ret = [base]
     # trivial edge case
     if page_equals(base, target):
         ret.append(target)
         return ret
+    # check if path can be found in database
+    ret = find_path_in_database(base, target, database)
+    if ret is not None:
+        return ret
+    print("[Info]: Could not find path in database (depth=0).")
     # convert target's spaces into underscores
     target = target.replace(" ", "_")
     base_links = store_wiki_links(base, database)  # all the links FROM the base page
