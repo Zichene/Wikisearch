@@ -14,10 +14,14 @@ Information is scrapped and parsed using [BeautifulSoup](https://pypi.org/projec
 2. Create a new virtual environment
 3. Run ``pip install -r requirements.txt`` in terminal/shell
 4. CD into the directory containing ``ws.py``.
-5. To run the app, run ``py ws.py <Base Page> <Destination Page> [-d]`` in the terminal/shell, where 'Base Page' is the title of the base wikipedia page and 'Destination Page' is the title of the destination wikipedia page and '-d' is the optional dynamic searching command.
+5. To run the app, run ``py ws.py <Base Page> <Destination Page> [extra_cmd]`` in the terminal/shell, where 'Base Page' is the title of the base wikipedia page and 'Destination Page' is the title of the destination wikipedia page and 'extra_cmd' is an extra specification
+   - ``-d``: specifies the 'dynamic' searching mode
+   - ``-db``: specifies the 'database only' searching mode
 
 ## Notes
 - It currently can take a long time (10 minutes or more) to run the program depending on inputs and if the path does not exist in the database.
 - Currently, the maximum length of a path is 3 (including base & destination pages).
 - If a Wikipedia page is not found, the program will end immediately.
 - Activating the '-d' command will on average speed up completion by alot, however it may return a path that is longer than optimal.
+- Activating the '-db' command will stop live scraping, and only look for valid paths in the database.
+- The '-d' and '-db' commands are mutually exclusive and cannot be applied at the same time.

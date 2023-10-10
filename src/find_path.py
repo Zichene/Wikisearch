@@ -58,7 +58,7 @@ def find_path(base, target, database, dynamic):
             if dynamic:
                 path = find_path_in_database_fast(base_link_depth_2, target, database)
                 if path is not None:
-                    ret = path_remove_duplicates(base, ret + path)
+                    ret = path_remove_duplicates(base, ret + [base_link] + path)
                     return ret
             if page_equals(base_link_depth_2, target):
                 ret.append(base_link)
@@ -96,6 +96,8 @@ def find_path_in_database_bfs(root, destination, database):
             ret.append(query)
             while True:
                 parent = parents.get(cur)
+                if parent is None:
+                    return ret # if parent is None, then we have already reached
                 ret.insert(0, parent)
                 if parent == root:
                     return ret
@@ -107,6 +109,8 @@ def find_path_in_database_bfs(root, destination, database):
             continue
         for link in links:
             if link not in visited:
+                if cur == "World_War_II" and link == "Internet":
+                    break
                 parents[link] = cur  # parent of link is cur
                 visited.add(link)
                 queue.append(link)
