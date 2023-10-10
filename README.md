@@ -20,7 +20,7 @@ Information is scrapped and parsed using [BeautifulSoup](https://pypi.org/projec
 
 ## Notes
 - It currently can take a long time (10 minutes or more) to run the program depending on inputs and if the path does not exist in the database.
-- Currently, the maximum length of a path is 3 (including base & destination pages).
+- ~~Currently, the maximum length of a path is 3 (including base & destination pages).~~ Paths can be longer now.
 - If a Wikipedia page is not found, the program will end immediately.
 - Activating the '-d' command will on average speed up completion by alot, however it may return a path that is longer than optimal.
 - Activating the '-db' command will stop live scraping, and only look for valid paths in the database.
