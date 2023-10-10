@@ -4,3 +4,6 @@
 # xml/iml files
 *.xml
 *.iml
+
+# db files
+*.db
