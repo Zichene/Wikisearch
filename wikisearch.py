@@ -312,11 +312,13 @@ if __name__ == "__main__":
     print("Current number of pages in database (max=" + str(db.MAX_PAGES) + "):" + str(db.num_of_pages))
     # print_path(find_path_v2("Keyboard", "Nature", db, True))
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 4 and len(sys.argv) != 3:
         print("Incorrect usage: py wikisearch.py <base> <destination> [-d]")
         exit(0)
 
+    dynamic = True if (len(sys.argv) == 4 and sys.argv[3] == "-d") else False
+
     t1 = time.time()
-    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, sys.argv[3] == "-d")) # -d command means dynamic
+    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, dynamic))  # -d command means dynamic
     print("Time taken: " + str(time.time() - t1) + " s.")
     db.close()
