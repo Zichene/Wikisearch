@@ -9,47 +9,6 @@ import prune
 from database import PageDatabase
 from prune import *
 
-"""
-Tries to finds a path between two wikipedia articles consisting of redirects, depth = 2.
-@:returns: a list representing the path
-"""
-
-"TODO: Optimize this algorithm, more pruning? keep track of page names that have already been visited in a hashmap?"
-
-"""
-def find_path(base, target):
-    # global set keeping track of ALL names that have been visited for that particular search
-    nset = set()
-    # check if the target is also a valid wikipedia page
-    find_wiki_page(target)
-    ret = [base]
-    # trivial edge case
-    if base == target:
-        ret.append(target)
-        return ret
-    # convert target's spaces into underscores
-    target = target.replace(" ", "_")
-    n0 = find_wiki_links(base, False, nset)
-    counter = 0
-    for n0_cur in n0:
-        # print percentage to user
-        print_percentage(n0, n0_cur, counter)
-        counter += 1
-        # depth 1
-        if n0_cur == target:
-            ret.append(n0_cur)
-            os.system('cls')  # clear console text
-            return ret
-        # depth 2
-        n1 = find_wiki_links(n0_cur, False, nset)
-        for n1_cur in n1:
-            if n1_cur == target:
-                ret.append(n0_cur)
-                ret.append(n1_cur)
-                os.system('cls')  # clear console text
-                return ret
-    return None
-"""
 
 """
 Different implementation of find_path but uses breadth-first search inside of depth first (faster results
@@ -316,9 +275,9 @@ if __name__ == "__main__":
         print("Incorrect usage: py wikisearch.py <base> <destination> [-d]")
         exit(0)
 
-    dynamic = True if (len(sys.argv) == 4 and sys.argv[3] == "-d") else False
+    dyn = True if (len(sys.argv) == 4 and sys.argv[3] == "-d") else False
 
     t1 = time.time()
-    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, dynamic))  # -d command means dynamic
+    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, dyn))  # -d command means dynamic
     print("Time taken: " + str(time.time() - t1) + " s.")
     db.close()
