@@ -1,3 +1,4 @@
+import collections
 import sqlite3
 
 """
@@ -7,7 +8,7 @@ a SQLite table, whose rows represent a link to another wikipedia page.
 
 
 class PageDatabase:
-    MAX_PAGES = 1000 # too much memory use, can be changed later
+    MAX_PAGES = 1000  # too much memory use, can be changed later
     """
     Constructor. Initiates a new SQLite database.
     @:arg name: Name of database. If database already exists then no new database will be created.
@@ -21,7 +22,7 @@ class PageDatabase:
         self.connection.close()
         self.is_closed = True
         self.num_of_pages = 0
-        self.query_all_pages() # this will update the num_of_pages
+        self.query_all_pages()  # this will update the num_of_pages
 
     """
     Connects to the database and initiates the cursor object.
@@ -51,10 +52,10 @@ class PageDatabase:
     def create_page_table(self, page_name):
         if self.is_closed is True:
             self.connect()
-        #check if too many pages are in the db
+        # check if too many pages are in the db
         if self.num_of_pages >= self.MAX_PAGES:
-            #delete LAST table that has been entered
-            last_page = self.query_all_pages()[self.num_of_pages-1]
+            # delete LAST table that has been entered
+            last_page = self.query_all_pages()[self.num_of_pages - 1]
             self.remove_page_table(last_page)
 
         # create table for this one page
@@ -179,6 +180,7 @@ class PageDatabase:
     Queries for all of the pages (tables) in the database. Returns an array with the names of all the
     found tables.
     """
+
     def query_all_pages(self):
         if self.is_closed is True:
             self.connect()
@@ -187,30 +189,7 @@ class PageDatabase:
         WHERE type='table'
         """, )
         ret = self.cursor.fetchall()
-        self.num_of_pages = len(ret)-2 #sqlite_sequence and sqlite_master do not count!
+        self.num_of_pages = len(ret) - 2  # sqlite_sequence and sqlite_master do not count!
         return ret
 
-    """
-    Queries for a link name from a specific parent table but will keep looking at children of 
-    link pages for a given depth. Returns the entire path whenever found.
-    TODO: How to make this work for arbitrary depth?
-    """
 
-    def query_page_link_deep(self, page_name, link_name, depth):
-        if depth == 0:
-            return None
-        # if page_name itself does not exist in db then immediately return
-        if not self.query_page_exists(page_name):
-            return None
-
-        query = self.query_page_link(page_name, link_name)
-        if query is not None:
-            return [page_name, query]
-        links = self.query_page_link_all(page_name)
-
-        for link in links:
-            l_query = self.query_page_link(link, link_name)
-            if l_query is not None:
-                return [page_name, link, l_query]
-
-        return None
