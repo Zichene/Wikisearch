@@ -78,12 +78,17 @@ def find_path_v2(base, target, database, dynamic):
     target = target.replace(" ", "_")
     base_links = store_wiki_links(base, database)  # all the links FROM the base page
     counter = 1
+    # warning message
+    if dynamic:
+        print("Warning: Dynamic search may yield paths which are not shortest.")
     for base_link in base_links:
         if dynamic:
             # look for link between base_link and target in DB
             path = find_path_in_database(base_link, target, database)
             if path is not None:
-                return ret + path
+                # remove possible duplicates from path (e.g. A -> B -> A -> D)
+                ret = path_remove_duplicates(base, ret + path)
+                return ret
         # depth 1
         if page_equals(base_link, target):
             ret.append(base_link)
@@ -97,9 +102,10 @@ def find_path_v2(base, target, database, dynamic):
         for base_link_depth_2 in base_links_depth_2:
             # look in DB
             if dynamic:
-                path = find_path_in_database(base_link, target, database)
+                path = find_path_in_database(base_link_depth_2, target, database)
                 if path is not None:
-                    return ret + path
+                    ret = path_remove_duplicates(base, ret + path)
+                    return ret
             if page_equals(base_link_depth_2, target):
                 ret.append(base_link)
                 ret.append(base_link_depth_2)
@@ -279,16 +285,38 @@ def page_equals(n1, n2):
     return n1.replace("_", " ").lower() == n2.replace("_", " ").lower()
 
 
+"""
+Removes duplicates from path. For example: [A, B, A, D] -> [A, D].
+Not most efficient code but paths are expected to be very short so doesnt matter.
+"""
+
+
+def path_remove_duplicates(start, path: list):
+    # find the last index of "start" in path
+    if start not in path:
+        return None  # we have a problem in this case
+    index = 0
+    # find last index in list where we have duplicate of start
+    for i in range(len(path)):
+        if path[i] == start and i != 0:
+            index = i
+    ret = []
+    for i in range(index, len(path)):
+        ret.append(path[i])
+    return ret
+
+
 if __name__ == "__main__":
     db = PageDatabase('page_data.db')
+    db.remove_page_table("Music")
     print("Current number of pages in database (max=" + str(db.MAX_PAGES) + "):" + str(db.num_of_pages))
-    #print_path(find_path_v2("Egypt", "Savanna", db))
+    # print_path(find_path_v2("Keyboard", "Nature", db, True))
 
-    if len(sys.argv) != 3:
-        print("Incorrect usage: py wikisearch.py <base> <destination>")
+    if len(sys.argv) != 4:
+        print("Incorrect usage: py wikisearch.py <base> <destination> [-d]")
         exit(0)
 
     t1 = time.time()
-    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, True))
+    print_path(find_path_v2(sys.argv[1], sys.argv[2], db, sys.argv[3] == "-d")) # -d command means dynamic
     print("Time taken: " + str(time.time() - t1) + " s.")
     db.close()
