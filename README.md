@@ -13,7 +13,9 @@ Information is scrapped and parsed using [BeautifulSoup](https://pypi.org/projec
 1. Install Python 3
 2. Create a new virtual environment
 3. Run ``pip install -r requirements.txt`` in terminal/shell
-4. To run the app, run ``py wikisearch.py <Base Page> <Destination Page> [-d]`` in the terminal/shell, where 'Base Page' is the title of the base wikipedia page and 'Destination Page' is the title of the destination wikipedia page and '-d' is the optional dynamic searching command.
+4. CD into the directory containing ``ws.py``.
+5. To run the app, run ``py ws.py <Base Page> <Destination Page> [-d]`` in the terminal/shell, where 'Base Page' is the title of the base wikipedia page and 'Destination Page' is the title of the destination wikipedia page and '-d' is the optional dynamic searching command.
+
 ## Notes
 - It currently can take a long time (10 minutes or more) to run the program depending on inputs and if the path does not exist in the database.
 - Currently, the maximum length of a path is 3 (including base & destination pages).
